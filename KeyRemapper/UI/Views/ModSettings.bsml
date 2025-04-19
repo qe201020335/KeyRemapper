@@ -1,0 +1,29 @@
+﻿<vertical bg="round-rect-panel">
+  <!-- 标题 =========================================================-->
+  <horizontal align="Center" preferredHeight="7">
+    <text text="Key Remapper" fontSize="6" align="Center"/>
+  </horizontal>
+
+  <!-- 禁用官方暂停键 ================================================-->
+  <toggle-setting text="Disable built‑in Pause key"
+                  applyImmediately="true"
+                  onChangeMethod="OnDisableToggle"
+                  />
+
+  <!-- 绑定列表 =====================================================-->
+  <vertical preferredHeight="60">
+    <scroll-view vertical="true">
+      <custom-list id="KeyMapTable"
+                   reuseIdentifier="KeyEntry"
+                   tableType="Horizontal"
+                   visible-cells="8"
+                   scrollable="true" />
+    </scroll-view>
+  </vertical>
+
+  <!-- 底部按钮 =====================================================-->
+  <horizontal padding="0 2 0 2" spacing="3">
+    <button id="AddBtn"   text="Add Binding"/>
+    <button id="ResetBtn" text="Reset Default"/>
+  </horizontal>
+</vertical>

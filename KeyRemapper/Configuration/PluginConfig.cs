@@ -1,38 +1,52 @@
-﻿/*
+﻿// Configuration/PluginConfig.cs
+
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
+using IPA.Config.Stores.Attributes;
+using IPA.Config.Stores.Converters;
+using KeyRemapper.Logic;
+using Newtonsoft.Json;
+using UnityEngine.XR;
+using static KeyRemapper.Logic.InputMapManager;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
-namespace KeyRemapper.Configuration
+
+namespace KeyRemapper.Configuration;
+
+public class PluginConfig
 {
-    internal class PluginConfig
+    // 多动作字典：action 名字 → 列表
+    [UseConverter(typeof(DictionaryConverter<List<ButtonBinding>>))]
+    public Dictionary<string, List<ButtonBinding>> Bindings { get; set; }
+        = new()
+        {
+            { RemapAction.Pause.ToString(),      new List<ButtonBinding>() },
+            { RemapAction.Restart.ToString(),    new List<ButtonBinding>() },
+            { RemapAction.Screenshot.ToString(), new List<ButtonBinding>() }
+        };
+
+    public bool DisableBuiltInPause { get; set; } = false;
+
+    public static PluginConfig Instance { get; set; }
+
+    #region Hooks
+
+    public virtual void OnReload()
     {
-        public static PluginConfig Instance { get; set; }
-        public virtual int IntValue { get; set; } = 42; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
+    } // BSIPA 回调
 
-        /// <summary>
-        /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
-        /// </summary>
-        public virtual void OnReload()
-        {
-            // Do stuff after config is read from disk.
-        }
+    public virtual void Changed()
+    {
+    } // 保存时调用
 
-        /// <summary>
-        /// Call this to force BSIPA to update the config file. This is also called by BSIPA if it detects the file was modified.
-        /// </summary>
-        public virtual void Changed()
-        {
-            // Do stuff when the config is changed.
-        }
-
-        /// <summary>
-        /// Call this to have BSIPA copy the values from <paramref name="other"/> into this config.
-        /// </summary>
-        public virtual void CopyFrom(PluginConfig other)
-        {
-            // This instance's members populated from other
-        }
+    public virtual void CopyFrom(PluginConfig other)
+    {
+        Bindings = JsonConvert.DeserializeObject<Dictionary<string, List<ButtonBinding>>>(
+            JsonConvert.SerializeObject(other.Bindings)); // 深拷贝
+        DisableBuiltInPause = other.DisableBuiltInPause;
     }
+
+    #endregion
 }
-*/
