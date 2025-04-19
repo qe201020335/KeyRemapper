@@ -118,11 +118,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="KeyRemapperInstaller.cs" />
-    <Compile Include="OpenXRPausePatch.cs" />
+    <Compile Include="Installers\AppInstaller.cs" />
+    <Compile Include="Installers\GameplayInstaller.cs" />
+    <Compile Include="Installers\MenuInstaller.cs" />
+    <Compile Include="Logic\OpenXRPausePatch.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
-    <Compile Include="KeyRemapperController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

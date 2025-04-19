@@ -9,6 +9,7 @@ using SiraUtil.Zenject;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using IPALogger = IPA.Logging.Logger;
+using KeyRemapper.Installers;
 
 
 namespace KeyRemapper
@@ -24,7 +25,9 @@ namespace KeyRemapper
             Log = logger;
             Log.Info("KeyRemapper initialized.");
 
-            zenjector.Install<KeyRemapperInstaller>(Location.GameCore);
+            zenjector.Install<AppInstaller>(Location.App);
+            zenjector.Install<MenuInstaller>(Location.Menu);
+            zenjector.Install<GameplayInstaller>(Location.GameCore);
         }
 
         // 下面 OnStart / OnExit 可以留空或保留日志
