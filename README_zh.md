@@ -16,8 +16,8 @@
 ## 安装
 
 1.  确保你已安装 Beat Saber Modding 工具（例如 Mod Assistant）。
-2.  从 [Releases](https://github.com/YOUR_USERNAME/KeyRemapper/releases) 页面下载最新的发布版本。
-3.  将下载的 zip 文件解压到你的 Beat Saber 安装目录（包含 `Beat Saber.exe` 的文件夹）。
+2.  从 [Releases](https://github.com/lyyQwQ/KeyRemapper/releases) 页面下载最新的 `KeyRemapper.dll` 文件。
+3.  将下载的 `KeyRemapper.dll` 文件放入你的 Beat Saber 安装目录（包含 `Beat Saber.exe` 的文件夹）下的 `Plugins` 文件夹中。
 
 ## 贡献
 

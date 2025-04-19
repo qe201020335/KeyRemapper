@@ -16,8 +16,8 @@ A Beat Saber mod to remap controller buttons.
 ## Installation
 
 1.  Make sure you have Beat Saber modding tools installed (e.g., Mod Assistant).
-2.  Download the latest release from the [Releases](https://github.com/YOUR_USERNAME/KeyRemapper/releases) page.
-3.  Extract the downloaded zip file into your Beat Saber installation folder (where `Beat Saber.exe` is located).
+2.  Download the latest `KeyRemapper.dll` from the [Releases](https://github.com/lyyQwQ/KeyRemapper/releases) page.
+3.  Place the downloaded `KeyRemapper.dll` file into the `Plugins` folder within your Beat Saber installation directory (the folder containing `Beat Saber.exe`).
 
 ## Contributing
 
