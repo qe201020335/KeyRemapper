@@ -47,10 +47,10 @@ internal class ModSettingsController : BSMLAutomaticViewController
         _tableData.Clear();
         foreach (RemapAction act in System.Enum.GetValues(typeof(RemapAction)))
         {
-            foreach (var bind in _map.GetBindings(act))
-                _tableData.Add(new BindingRow(act, bind));
-            if (_map.GetBindings(act).Count == 0) // 没有绑定也显示一行灰显
-                _tableData.Add(new BindingRow(act, null));
+            // foreach (var bind in _map.GetBindings(act))
+            //     _tableData.Add(new BindingRow(act, bind));
+            // if (_map.GetBindings(act).Count == 0) // 没有绑定也显示一行灰显
+            //     _tableData.Add(new BindingRow(act, null));
         }
 
         _table.TableView.ReloadData();
@@ -81,7 +81,7 @@ internal class ModSettingsController : BSMLAutomaticViewController
         // 实际使用可弹窗让玩家选择动作，然后捕获按键
         CaptureOverlay.Show(binding =>
         {
-            _map.AddBinding(RemapAction.Pause, binding);
+            // _map.AddBinding(RemapAction.Pause, binding);
             RefreshTable();
         });
     }
@@ -89,7 +89,7 @@ internal class ModSettingsController : BSMLAutomaticViewController
     [UIAction("ResetBtn")]
     private void OnReset()
     {
-        _cfg.Bindings.Clear();
+        // _cfg.Bindings.Clear();
         _cfg.Changed();
         RefreshTable();
     }

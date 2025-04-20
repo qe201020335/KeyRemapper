@@ -136,7 +136,6 @@
     <Compile Include="Installers\AppInstaller.cs" />
     <Compile Include="Installers\GameplayInstaller.cs" />
     <Compile Include="Installers\MenuBindingsInstaller.cs" />
-    <Compile Include="Installers\MenuInstaller.cs" />
     <Compile Include="Logic\InputManager.cs" />
     <Compile Include="Logic\OpenXRPausePatch.cs" />
     <Compile Include="Plugin.cs" />
