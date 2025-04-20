@@ -1,0 +1,9 @@
+﻿<horizontal align="Center" preferredHeight="8" spacing="3">
+  <text id="ActionLabel"  fontSize="4.0" preferredWidth="26" align="left" />
+
+  <!-- 当前绑定 -->
+  <text id="BindingLabel" fontSize="4.0" preferredWidth="48" align="center" wrap="false" />
+
+  <!-- 删除按钮 -->
+  <button id="RemoveBtn" text="X" preferredWidth="6" />
+</horizontal>
