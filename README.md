@@ -45,7 +45,7 @@ A **Beat Saber** mod that lets you remap almost any controller button.
 ## Configuration File
 
 On first launch the mod creates  
-`UserData/KeyRemapper.cfg`. A minimal file looks like:
+`UserData/KeyRemapper.json`. A minimal file looks like:
 
 ```jsonc
 {
@@ -68,10 +68,20 @@ On first launch the mod creates
 ### Example (author’s own setup)
 
 ```jsonc
-"Pause": {
-  "Bindings": ["L_X", "L_Y", "R_A", "R_B"],
-  "BuiltInKeys": [],
-  "BlockBuiltIn": false
+{
+  "Version": 2,
+  "Actions": {
+    "Pause": {
+      "Bindings": ["L_X", "L_Y", "R_A", "R_B"],
+      "BuiltInKeys": [],
+      "BlockBuiltIn": false
+    },
+    "Restart": {
+      "Bindings": [],
+      "BuiltInKeys": [],
+      "BlockBuiltIn": false
+    }
+  }
 }
 ```
 

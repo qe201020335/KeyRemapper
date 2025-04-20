@@ -49,7 +49,7 @@
 ## 配置文件
 
 插件首次运行后将在  
-`UserData/KeyRemapper.cfg` 生成如下结构（**空数组 `[]` = 不设置**）：
+`UserData/KeyRemapper.json` 生成如下结构（**空数组 `[]` = 不设置**）：
 
 ```jsonc
 {
@@ -90,7 +90,7 @@
 ```
 
 > **修改方法**
-> 1. 打开 `KeyRemapper.cfg`
+> 1. 打开 `KeyRemapper.json`
 > 2. 在 `Bindings` 数组里填入上表中的 **Token 字符串**
 > 3. 保存文件并重启游戏
 
