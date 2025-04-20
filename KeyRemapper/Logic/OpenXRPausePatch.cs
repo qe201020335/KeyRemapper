@@ -5,6 +5,7 @@ using UnityEngine.XR;
 using SiraUtil.Zenject;
 using Zenject;
 using HarmonyLib;
+using static IPA.Logging.Logger;
 
 namespace KeyRemapper.Logic;
 
@@ -14,6 +15,7 @@ internal class OpenXRPausePatch : IAffinity, ITickable
     [Inject] private readonly PauseController _pauseController;
     [Inject] private readonly BeatmapObjectManager _beatmapObjectManager;
     [Inject] private readonly PauseMenuManager _pauseMenuManager;
+    [Inject] private readonly InputMapManager _map;           // 新增
 
     // 拿到暂停界面的Continue按钮的方法
     // 用这个东西的原因是如果只调用PauseController的恢复方法，其他mod似乎收不到Continue的相关事件
@@ -33,7 +35,8 @@ internal class OpenXRPausePatch : IAffinity, ITickable
         if (!Valid(_left)) Refresh(_left, true);
         if (!Valid(_right)) Refresh(_right, false);
 
-        bool pressedNow = AnyButtonDown(_left) || AnyButtonDown(_right);
+        // bool pressedNow = AnyButtonDown(_left) || AnyButtonDown(_right);
+        bool pressedNow = _map.GetActionState(InputMapManager.RemapAction.Pause);
 
         // Edge detection
         if (pressedNow && !_prevPressed)

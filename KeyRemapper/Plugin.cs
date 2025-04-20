@@ -46,20 +46,22 @@ namespace KeyRemapper
             // 必须等 Instance 不为 null 后再绑定
             zenjector.Install<KeyRemapper.Installers.AppInstaller>(Location.App);
             zenjector.Install<KeyRemapper.Installers.GameplayInstaller>(Location.GameCore);
-            zenjector.Install<KeyRemapper.Installers.MenuBindingsInstaller>(Location.Menu);
+            // zenjector.Install<KeyRemapper.Installers.MenuBindingsInstaller>(Location.Menu);
         }
 
         [OnEnable]
         public void Enable()
         {
             // 等“进入主菜单 & 第一次加载”事件
-            BSEvents.menuSceneLoadedFresh += OnMenuReady;
+            // 先不显示界面
+            // BSEvents.menuSceneLoadedFresh += OnMenuReady;
         }
 
         [OnDisable]
         public void Disable()
         {
-            BSEvents.menuSceneLoadedFresh -= OnMenuReady;
+            // 先不显示界面
+            // BSEvents.menuSceneLoadedFresh -= OnMenuReady;
         }
 
 
