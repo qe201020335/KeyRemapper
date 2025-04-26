@@ -130,7 +130,4 @@
     <Content Include="UI\Views\KeyEntryCell.bsml" />
     <Content Include="UI\Views\ModSettings.bsml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
 </Project>
