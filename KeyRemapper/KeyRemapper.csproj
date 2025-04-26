@@ -16,7 +16,6 @@
     <DebugType>portable</DebugType>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 <!--    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
     <EnableFrameworkPathOverride>true</EnableFrameworkPathOverride>
     <FrameworkPathOverride>$(BeatSaberDir)\Beat Saber_Data\Managed</FrameworkPathOverride>
@@ -130,5 +129,8 @@
     <EmbeddedResource Include="manifest.json" />
     <Content Include="UI\Views\KeyEntryCell.bsml" />
     <Content Include="UI\Views\ModSettings.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
