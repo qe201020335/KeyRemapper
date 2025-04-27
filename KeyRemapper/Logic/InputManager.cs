@@ -11,13 +11,13 @@ namespace KeyRemapper.Logic;
 /// <summary>
 /// 负责在运行时判断“某个动作是否被触发”以及对 Config 做读写。
 /// </summary>
-public class InputMapManager : IInitializable, IDisposable
+internal class InputMapManager : IInitializable, IDisposable
 {
     private readonly PluginConfig _config;
     private readonly Dictionary<string, InputDevice> _deviceCache = new();
 
     // 运行期缓存：动作 → 解析好的 ButtonBinding 列表
-    private readonly Dictionary<string, List<ButtonBinding>> _runtime = new();
+    private readonly Dictionary<RemapAction, List<ButtonBinding>> _runtime = new();
 
 
     // 枚举放这里，UI 和 Patch 共用
@@ -42,7 +42,7 @@ public class InputMapManager : IInitializable, IDisposable
     /// <summary>外部调用：判断指定动作是否被按下（边沿检测由调用方完成）</summary>
     public bool GetActionState(RemapAction act)
     {
-        foreach (var bind in _runtime[act.ToString()])
+        foreach (var bind in _runtime[act])
         {
             if (!TryGetDevice(bind, out var dev)) continue;
             if (dev.TryGetFeatureValue(bind.Feature, out var v) && v)
@@ -104,24 +104,26 @@ public class InputMapManager : IInitializable, IDisposable
     private void BuildRuntimeCache()
     {
         _runtime.Clear();
+        _runtime[RemapAction.Pause] = GetBindingsForAction(RemapAction.Pause, _config.Actions.Pause);
+        _runtime[RemapAction.Restart] = GetBindingsForAction(RemapAction.Restart, _config.Actions.Restart);
+    }
+    
+    private static List<ButtonBinding> GetBindingsForAction(RemapAction name, ActionBinding setting)
+    {
+        var list = new List<ButtonBinding>(setting.Bindings.Count);
 
-        foreach (var (name, setting) in _config.Actions)
+        foreach (var token in setting.Bindings)
         {
-            var list = new List<ButtonBinding>();
-
-            foreach (var token in setting.Bindings)
+            Plugin.Log.Info($"{name}: {token}");
+            // 只解析 Bindings；BuiltInKeys 由 Patch 拦截逻辑处理
+            if (ButtonCatalog.TryGet(token, out var bind))
             {
-                Plugin.Log.Info($"{name}: {token}");
-                // 只解析 Bindings；BuiltInKeys 由 Patch 拦截逻辑处理
-                if (ButtonCatalog.TryGet(token, out var bind))
-                {
-                    list.Add(bind);
-                    Plugin.Log.Info($"try get success {name}: {token}");
-                }
+                list.Add(bind);
+                Plugin.Log.Info($"try get success {name}: {token}");
             }
-
-            _runtime[name] = list;
         }
+
+        return list;
     }
 
     private bool IsBuiltInPressed()

@@ -1,94 +1,59 @@
-﻿// Configuration/PluginConfig.cs
-
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
 using IPA.Config.Stores.Attributes;
 using IPA.Config.Stores.Converters;
-using KeyRemapper.Logic;
-using Newtonsoft.Json;
-using UnityEngine.XR;
-using static KeyRemapper.Logic.InputMapManager;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 
 namespace KeyRemapper.Configuration;
 
-public class PluginConfig
+internal class PluginConfig
 {
     public static PluginConfig Instance { get; set; }
 
-    public int Version { get; set; } = 2;
+    public virtual int Version { get; protected set; } = 2;
 
-    [UseConverter(typeof(DictionaryConverter<PluginConfig.ActionSetting>))]
-    public Dictionary<string, ActionSetting> Actions { get; set; }
-        = ActionSetting.BuildDefault();
+    public virtual ActionSettings Actions { get; protected set; } = new();
+}
 
-    public class ActionSetting
+internal class ActionSettings
+{
+    public virtual ActionBinding Pause { get; protected set; } = new();
+
+    public virtual ActionBinding Restart { get; protected set; } = new();
+
+    public void Reset()
     {
-        [UseConverter(typeof(ListConverter<string>))]
-        public List<string> Bindings { get; set; } = new();
+        Pause = new ActionBinding();
+        Restart = new ActionBinding();
+    }
+}
 
-        [UseConverter(typeof(ListConverter<string>))]
-        public List<string> BuiltInKeys { get; set; } = new();
+internal class ActionBinding
+{
+    [UseConverter(typeof(ListConverter<string>))]
+    [SerializedName("Bindings")]
+    protected virtual List<string> BindingsInternal { get; set; } = [];
 
-        public bool BlockBuiltIn { get; set; } = false;
+    public virtual bool BlockBuiltIn { get; set; } = false;
 
-        // 默认模板
-        public static Dictionary<string, ActionSetting> BuildDefault()
-            => new()
-            {
-                {
-                    RemapAction.Pause.ToString(),
-                    new ActionSetting
-                    {
-                        Bindings = new() { },
-                        BuiltInKeys = new() { },
-                        BlockBuiltIn = false
-                    }
-                },
-                {
-                    RemapAction.Restart.ToString(),
-                    new ActionSetting
-                    {
-                        Bindings = new() { },
-                        BuiltInKeys = new() { },
-                        BlockBuiltIn = false
-                    }
-                }
-            };
+    public IReadOnlyList<string> Bindings => BindingsInternal.AsReadOnly();
+
+    public void AddBinding(string binding)
+    {
+        BindingsInternal.Add(binding);
+        Changed(); // 触发保存
     }
 
-
-    #region Hooks  ---------------------------
-
-    // BSIPA 在插件启动后读取 cfg 时调用
-    public virtual void OnReload()
+    public void RemoveBinding(string binding)
     {
-        if (Actions == null || Actions.Count == 0)
-            Actions = ActionSetting.BuildDefault();
-        foreach (var kv in Actions)
-        {
-            kv.Value.Bindings ??= new List<string>();
-            kv.Value.BuiltInKeys ??= new List<string>();
-        }
+        BindingsInternal.Remove(binding);
+        Changed(); // 触发保存
     }
 
-    // 当你手动调用 config.Save() 时被触发
-    public virtual void Changed()
+    protected virtual void Changed()
     {
+        // BSIPA 会重写此方法，调用时会触发保存
     }
-
-    // 深拷贝：用于 BSIPA 的热重载和 Undo
-    public virtual void CopyFrom(PluginConfig other)
-    {
-        Version = other.Version;
-
-        // 深拷贝 Actions（Json 仍是最省事的办法）
-        Actions = JsonConvert.DeserializeObject<Dictionary<string, ActionSetting>>(
-            JsonConvert.SerializeObject(other.Actions));
-    }
-
-    #endregion
 }
