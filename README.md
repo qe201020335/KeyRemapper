@@ -53,12 +53,10 @@ On first launch the mod creates
   "Actions": {
     "Pause": {
       "Bindings": [],          // Your custom buttons
-      "BuiltInKeys": [],       // Native Beat Saber buttons (not blocked yet)
       "BlockBuiltIn": false    // Has no effect for now
     },
     "Restart": {               // Reserved – currently ignored
       "Bindings": [],
-      "BuiltInKeys": [],
       "BlockBuiltIn": false
     }
   }
@@ -73,12 +71,10 @@ On first launch the mod creates
   "Actions": {
     "Pause": {
       "Bindings": ["L_X", "L_Y", "R_A", "R_B"],
-      "BuiltInKeys": [],
       "BlockBuiltIn": false
     },
     "Restart": {
       "Bindings": [],
-      "BuiltInKeys": [],
       "BlockBuiltIn": false
     }
   }

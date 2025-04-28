@@ -57,12 +57,10 @@
   "Actions": {
     "Pause": {
       "Bindings": [],          // 自定义按键
-      "BuiltInKeys": [],       // 原生按键（暂未屏蔽）
       "BlockBuiltIn": false    // 屏蔽原生按键（暂未生效）
     },
     "Restart": {               // 预留；当前不起作用
       "Bindings": [],
-      "BuiltInKeys": [],
       "BlockBuiltIn": false
     }
   }
@@ -77,12 +75,10 @@
   "Actions": {
     "Pause": {
       "Bindings": ["L_X", "L_Y", "R_A", "R_B"],
-      "BuiltInKeys": [],
       "BlockBuiltIn": false
     },
     "Restart": {
       "Bindings": [],
-      "BuiltInKeys": [],
       "BlockBuiltIn": false
     }
   }
