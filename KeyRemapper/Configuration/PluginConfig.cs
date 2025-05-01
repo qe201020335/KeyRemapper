@@ -25,8 +25,8 @@ internal class ActionSettings
 
     public void Reset()
     {
-        Pause = new ActionBinding();
-        Restart = new ActionBinding();
+        Pause.Reset();
+        Restart.Reset();
     }
 }
 
@@ -49,6 +49,13 @@ internal class ActionBinding
     public void RemoveBinding(string binding)
     {
         BindingsInternal.Remove(binding);
+        Changed(); // 触发保存
+    }
+    
+    public void Reset()
+    {
+        BindingsInternal.Clear();
+        BlockBuiltIn = false;
         Changed(); // 触发保存
     }
 
