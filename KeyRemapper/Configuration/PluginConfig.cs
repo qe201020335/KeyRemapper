@@ -10,7 +10,14 @@ namespace KeyRemapper.Configuration;
 
 internal class PluginConfig
 {
-    public static PluginConfig Instance { get; set; }
+    private static PluginConfig? _instance;
+    public static PluginConfig Instance => _instance!;
+
+    public static void Initialize(IPA.Config.Config conf)
+    {
+        if (_instance != null) return;
+        _instance = conf.Generated<PluginConfig>();
+    }
 
     public virtual int Version { get; protected set; } = 2;
 

@@ -14,42 +14,34 @@ using KeyRemapper.Installers;
 using BeatSaberMarkupLanguage.MenuButtons;
 using BS_Utils.Utilities;
 using HMUI;
+using KeyRemapper.Configuration;
 using KeyRemapper.UI.ViewControllers;
 using Zenject;
 
 namespace KeyRemapper
 {
-    [Plugin(RuntimeOptions.DynamicInit)]
+    [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
         internal static IPALogger Log { get; private set; }
         private SettingsFlow _flow;             // 缓存 FlowCoordinator
 
         [Init]
-        public void Init(IPALogger logger, Zenjector zenjector)
+        public Plugin(IPALogger logger, IPA.Config.Config conf, Zenjector zenjector)
         {
             Log = logger;
-            Log.Info("KeyRemapper initialized.");
-
-            // zenjector.Install<AppInstaller>(Location.App);
-            // zenjector.Install<MenuInstaller>(Location.Menu);
-            // zenjector.Install<GameplayInstaller>(Location.GameCore);
-            // zenjector.Install<MenuBindingsInstaller>(Location.Menu);
-        }
-
-        [Init]   // 第二个 Init —— 带 Config 参数
-        public void InitWithConfig(IPA.Config.Config conf, Zenjector zenjector)
-        {
             // 生成或加载 cfg → 存到静态 Instance
-            KeyRemapper.Configuration.PluginConfig.Instance = conf.Generated<KeyRemapper.Configuration.PluginConfig>();
-
+            PluginConfig.Initialize(conf);
+            logger.Debug("Config loaded.");
             // 必须等 Instance 不为 null 后再绑定
-            zenjector.Install<KeyRemapper.Installers.AppInstaller>(Location.App);
-            zenjector.Install<KeyRemapper.Installers.GameplayInstaller>(Location.GameCore);
-            // zenjector.Install<KeyRemapper.Installers.MenuBindingsInstaller>(Location.Menu);
+            zenjector.Install<AppInstaller>(Location.App);
+            zenjector.Install<GameplayInstaller>(Location.Player);
+            // zenjector.Install<MenuBindingsInstaller>(Location.Menu);
+            
+            Log.Info("KeyRemapper initialized.");
         }
 
-        [OnEnable]
+        [OnStart]
         public void Enable()
         {
             // 等“进入主菜单 & 第一次加载”事件
@@ -57,7 +49,7 @@ namespace KeyRemapper
             // BSEvents.menuSceneLoadedFresh += OnMenuReady;
         }
 
-        [OnDisable]
+        [OnExit]
         public void Disable()
         {
             // 先不显示界面
@@ -75,11 +67,6 @@ namespace KeyRemapper
             BSEvents.menuSceneLoadedFresh -= OnMenuReady;
             Log.Info("Key Remapper button registered.");
         }
-
-        // 下面 OnStart / OnExit 可以留空或保留日志
-        [OnStart] public void OnApplicationStart() { }
-        [OnExit]  public void OnApplicationQuit()  { }
-
 
         private void ShowSettings()
         {
