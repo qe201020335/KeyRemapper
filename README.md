@@ -8,37 +8,44 @@ A **Beat Saber** mod that lets you remap almost any controller button.
 
 ## Current Capabilities
 
-| Action | Description |
-|--------|-------------|
-| **Pause** | You can bind **any supported button** as the pause key. |
-
-> **Restart actions and “block built‑in keys” are **not implemented yet**.  
-> They are harmless in the config but currently ignored.
+| Action      | Description                                                 |
+|-------------|-------------------------------------------------------------|
+| **Pause**   | You can bind **any supported button** as the pause key.     |
+| **Restart** | You can bind **any supported button** to restart the level. |
 
 ---
 
 ## Supported Button Tokens
 
-| Token | Physical Button | Unity `CommonUsages` | Hand |
-|-------|----------------|----------------------|------|
-| `L_X` / `R_A` | X (left) / A (right) | `primaryButton` | L / R |
-| `L_Y` / `R_B` | Y (left) / B (right) | `secondaryButton` | L / R |
-| `L_Grip` / `R_Grip` | Grip | `gripButton` | L / R |
-| `L_Trigger` / `R_Trigger` | Trigger (click) | `triggerButton` | L / R |
-| `L_Stick` / `R_Stick` | Thumb‑stick click | `primary2DAxisClick` | L / R |
-| `L_Menu` / `R_Menu` / `Menu` | Menu button | `menuButton` | L / R / Both |
+| Token                        | Physical Button      | Unity `CommonUsages` | Hand  |
+|------------------------------|----------------------|----------------------|-------|
+| `L_X` / `R_A`                | X (left) / A (right) | `primaryButton`      | L / R |
+| `L_Y` / `R_B`                | Y (left) / B (right) | `secondaryButton`    | L / R |
+| `L_Grip` / `R_Grip`          | Grip                 | `gripButton`         | L / R |
+| `L_Trigger` / `R_Trigger`    | Trigger (click)      | `triggerButton`      | L / R |
+| `L_Stick` / `R_Stick`        | Thumb‑stick click    | `primary2DAxisClick` | L / R |
+| `L_Menu` / `R_Menu` / `Menu` | Menu button          | `menuButton`         | L / R |
 
 > **Heads‑up – Triggers**  
-> Triggers also act as **click** inside the pause menu, so binding `L_Trigger`/`R_Trigger` to *Pause* can make the cursor instantly resume the game.  
+> Triggers also act as **click** inside the pause menu, so binding `L_Trigger`/`R_Trigger` to *Pause* can make the
+> cursor instantly resume the game.  
 > If you must use a trigger, bind **only one** side and be careful.
+
+---
+
+## Requirements
+
+- BSIPA
+- BSML
+- SiraUtil
 
 ---
 
 ## Installation
 
-1. Install Beat Saber modding tools (e.g. **Mod Assistant**).
-2. Download the latest **`KeyRemapper.dll`** from the [Releases](https://github.com/lyyQwQ/KeyRemapper/releases) page.
-3. Drop the DLL into your **Beat Saber/Plugins** folder.
+1. Install the required mods
+2. Download the latest from the [Releases](https://github.com/lyyQwQ/KeyRemapper/releases) page.
+3. Unzip the archive into your Beat Saber folder.
 
 ---
 
@@ -53,11 +60,10 @@ On first launch the mod creates
   "Actions": {
     "Pause": {
       "Bindings": [],          // Your custom buttons
-      "BlockBuiltIn": false    // Has no effect for now
-    },
-    "Restart": {               // Reserved – currently ignored
-      "Bindings": [],
       "BlockBuiltIn": false
+    },
+    "Restart": {
+      "Bindings": []
     }
   }
 }
@@ -74,14 +80,13 @@ On first launch the mod creates
       "BlockBuiltIn": false
     },
     "Restart": {
-      "Bindings": [],
-      "BlockBuiltIn": false
+      "Bindings": []
     }
   }
 }
 ```
 
-* Edit the file, add any **Token** from the table above into `Bindings`, save, and restart the game.
+* Edit the file, add any **Token** from the table above into `Bindings`, save
 * Empty array `[]` means “not set”.
 
 ---
@@ -89,8 +94,6 @@ On first launch the mod creates
 ## Known Limitations
 
 1. **Trigger as Pause** – interferes with menu clicks; consider another button.
-2. `BlockBuiltIn` does nothing yet – the Menu key still pauses.
-3. `Restart` action is not wired up yet.
 
 ---
 
