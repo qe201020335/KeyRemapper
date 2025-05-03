@@ -22,11 +22,20 @@ internal class PluginConfig
     public virtual int Version { get; protected set; } = 2;
 
     public virtual ActionSettings Actions { get; protected set; } = new();
+
+    public virtual void Changed()
+    {
+        Plugin.Log.Trace("PluginConfig Changed");
+        // BSIPA 会重写此方法，调用时会触发保存
+        // 设置重载时也会调用此方法
+        Actions.Pause.Reloaded();
+        Actions.Restart.Reloaded();
+    }
 }
 
 internal class ActionSettings
 {
-    public virtual ActionBinding Pause { get; protected set; } = new();
+    public virtual PauseBinding Pause { get; protected set; } = new();
 
     public virtual ActionBinding Restart { get; protected set; } = new();
 
@@ -43,9 +52,10 @@ internal class ActionBinding
     [SerializedName("Bindings")]
     protected virtual HashSet<ControllerButton> BindingsInternal { get; set; } = [];
 
-    public virtual bool BlockBuiltIn { get; set; } = false;
-
-    public IReadOnlyList<ControllerButton> Bindings => BindingsInternal.ToArray();
+    //创建只读防止外部修改
+    //并防止设置重载时发生并发修改 （取决于 BSIPA 是否会生成新集合实例）
+    [Ignore]
+    public IReadOnlyList<ControllerButton> Bindings { get; private set; } = [];
 
     public void AddBinding(ControllerButton binding)
     {
@@ -58,22 +68,40 @@ internal class ActionBinding
         BindingsInternal.Remove(binding);
         Changed(); // 触发保存
     }
-    
-    public void Reset()
+
+    public virtual void Reset()
     {
         BindingsInternal.Clear();
-        BlockBuiltIn = false;
         Changed(); // 触发保存
     }
-    
+
     public bool Contains(ControllerButton binding)
     {
         return BindingsInternal.Contains(binding);
     }
-
+    
     protected virtual void Changed()
     {
         // BSIPA 会重写此方法，调用时会触发保存
+        // 设置重载时不会调用此方法，BSIPA只会调用最外层对象的 Changed
+        Plugin.Log.Trace("ActionBinding Changed");
+        Reloaded();
+    }
+
+    public void Reloaded()
+    {
+        Bindings = BindingsInternal.ToList(); // 重新生成只读列表
+    }
+}
+
+internal class PauseBinding : ActionBinding
+{
+    public virtual bool BlockBuiltIn { get; set; } = false;
+
+    public override void Reset()
+    {
+        BlockBuiltIn = false;
+        base.Reset();
     }
 }
 

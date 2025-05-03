@@ -9,4 +9,8 @@ namespace KeyRemapper.InputManagers;
 public interface IInputManager
 {
     event Action<ControllerButton> ButtonPressed;
+    
+    public bool IsButtonPressedRightNow(ControllerButton button);
+
+    public bool IsButtonPressed(ControllerButton button);
 }

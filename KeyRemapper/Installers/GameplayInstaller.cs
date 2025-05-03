@@ -1,4 +1,4 @@
-﻿using KeyRemapper.BindingHandlers;
+﻿using KeyRemapper.Patches;
 using Zenject;
 
 namespace KeyRemapper.Installers;
@@ -7,6 +7,9 @@ internal class GameplayInstaller : Installer
 {
     public override void InstallBindings()
     {
-        Container.BindInterfacesTo<PauseHandler>().AsSingle().NonLazy();
+        if (Container.TryResolve<IVRPlatformHelper>()?.vrPlatformSDK == VRPlatformSDK.OpenXR)
+        {
+            Container.BindInterfacesTo<RemapBaseGameMenuButton>().AsSingle().NonLazy();
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using KeyRemapper.Configuration;
 using SiraUtil.Logging;
+using UnityEngine;
 using UnityEngine.XR;
 using Zenject;
 
@@ -33,8 +34,8 @@ internal class UnityXRInputManager : IInputManager, IInitializable, IDisposable,
         { ControllerButton.R_Menu, false }
     };
 
-    private InputDevice? _left;
-    private InputDevice? _right;
+    private InputDevice _left;
+    private InputDevice _right;
 
     void IInitializable.Initialize()
     {
@@ -55,79 +56,103 @@ internal class UnityXRInputManager : IInputManager, IInitializable, IDisposable,
 
     void ITickable.Tick()
     {
-        if (ButtonPressed is null) return; // 事件未注册
-        
         bool value;
         
         // 依次检测每个手柄的每个按钮
         // 虽然这样写很重复，但避免了动态内存分配，并且常数时间复杂度
-        if (_left.HasValue)
-        {
-            var left = _left.Value;
-            if (left.TryGetFeatureValue(CommonUsages.primaryButton, out value))
+        if (_left.isValid)
+        { 
+            if (_left.TryGetFeatureValue(CommonUsages.primaryButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.L_X, value);
             }
 
-            if (left.TryGetFeatureValue(CommonUsages.secondaryButton, out value))
+            if (_left.TryGetFeatureValue(CommonUsages.secondaryButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.L_Y, value);
             }
 
-            if (left.TryGetFeatureValue(CommonUsages.gripButton, out value))
+            if (_left.TryGetFeatureValue(CommonUsages.gripButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.L_Grip, value);
             }
 
-            if (left.TryGetFeatureValue(CommonUsages.triggerButton, out value))
+            if (_left.TryGetFeatureValue(CommonUsages.triggerButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.L_Trigger, value);
             }
 
-            if (left.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value))
+            if (_left.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.L_Stick, value);
             }
 
-            if (left.TryGetFeatureValue(CommonUsages.menuButton, out value))
+            if (_left.TryGetFeatureValue(CommonUsages.menuButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.L_Menu, value);
             }
         }
 
-        if (_right.HasValue)
+        if (_right.isValid)
         {
-            var right = _right.Value;
-            if (right.TryGetFeatureValue(CommonUsages.primaryButton, out value))
+            if (_right.TryGetFeatureValue(CommonUsages.primaryButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.R_A, value);
             }
 
-            if (right.TryGetFeatureValue(CommonUsages.secondaryButton, out value))
+            if (_right.TryGetFeatureValue(CommonUsages.secondaryButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.R_B, value);
             }
 
-            if (right.TryGetFeatureValue(CommonUsages.gripButton, out value))
+            if (_right.TryGetFeatureValue(CommonUsages.gripButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.R_Grip, value);
             }
 
-            if (right.TryGetFeatureValue(CommonUsages.triggerButton, out value))
+            if (_right.TryGetFeatureValue(CommonUsages.triggerButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.R_Trigger, value);
             }
 
-            if (right.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value))
+            if (_right.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.R_Stick, value);
             }
 
-            if (right.TryGetFeatureValue(CommonUsages.menuButton, out value))
+            if (_right.TryGetFeatureValue(CommonUsages.menuButton, out value))
             {
                 HandleButtonStateThisFrame(ControllerButton.R_Menu, value);
             }
         }
+    }
+
+    public bool IsButtonPressedRightNow(ControllerButton button)
+    {
+        // 检测当前按钮是否被按下
+        // 不需要检测是否Valid，因为内部会自动检测
+        bool value;
+        return button switch
+        {
+            ControllerButton.L_X => _left.TryGetFeatureValue(CommonUsages.primaryButton, out value) && value,
+            ControllerButton.L_Y => _left.TryGetFeatureValue(CommonUsages.secondaryButton, out value) && value,
+            ControllerButton.L_Grip => _left.TryGetFeatureValue(CommonUsages.gripButton, out value) && value,
+            ControllerButton.L_Trigger => _left.TryGetFeatureValue(CommonUsages.triggerButton, out value) && value,
+            ControllerButton.L_Stick => _left.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value) && value,
+            ControllerButton.L_Menu => _left.TryGetFeatureValue(CommonUsages.menuButton, out value) && value,
+            ControllerButton.R_A => _right.TryGetFeatureValue(CommonUsages.primaryButton, out value) && value,
+            ControllerButton.R_B => _right.TryGetFeatureValue(CommonUsages.secondaryButton, out value) && value,
+            ControllerButton.R_Grip => _right.TryGetFeatureValue(CommonUsages.gripButton, out value) && value,
+            ControllerButton.R_Trigger => _right.TryGetFeatureValue(CommonUsages.triggerButton, out value) && value,
+            ControllerButton.R_Stick => _right.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value) && value,
+            ControllerButton.R_Menu => _right.TryGetFeatureValue(CommonUsages.menuButton, out value) && value,
+            _ => false
+        };
+    }
+
+    public bool IsButtonPressed(ControllerButton button)
+    {
+        return _buttonStates[button];
     }
 
     private void OnNodeAdded(XRNodeState nodeState)
@@ -150,27 +175,23 @@ internal class UnityXRInputManager : IInputManager, IInitializable, IDisposable,
     {
         _logger.Debug("Refreshing controllers.");
         // 刷新左右手控制器
-        var leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
-        var rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-        if (leftHand.isValid)
+        _left = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+        _right = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+        if (_left.isValid)
         {
-            _left = leftHand;
             _logger.Debug("Left controller found.");
         }
         else
         {
-            _left = null;
             _logger.Warn("Left controller not found.");
         }
 
-        if (rightHand.isValid)
+        if (_right.isValid)
         {
-            _right = rightHand;
             _logger.Debug("Right controller found.");
         }
         else
         {
-            _right = null;
             _logger.Warn("Right controller not found.");
         }
     }
