@@ -1,4 +1,5 @@
-﻿using KeyRemapper.Patches;
+﻿using KeyRemapper.BindingHandlers;
+using KeyRemapper.Patches;
 using Zenject;
 
 namespace KeyRemapper.Installers;
@@ -10,6 +11,7 @@ internal class GameplayInstaller : Installer
         if (Container.TryResolve<IVRPlatformHelper>()?.vrPlatformSDK == VRPlatformSDK.OpenXR)
         {
             Container.BindInterfacesTo<RemapBaseGameMenuButton>().AsSingle().NonLazy();
+            Container.BindInterfacesTo<RestartHandler>().AsSingle().NonLazy();
         }
     }
 }
