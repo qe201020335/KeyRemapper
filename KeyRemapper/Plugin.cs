@@ -33,11 +33,10 @@ namespace KeyRemapper
             // 生成或加载 cfg → 存到静态 Instance
             PluginConfig.Initialize(conf);
             logger.Debug("Config loaded.");
-            // 必须等 Instance 不为 null 后再绑定
-            zenjector.Install<AppInstaller>(Location.App);
+            zenjector.Install<AppInstaller>(Location.App, PluginConfig.Instance);
             zenjector.Install<GameplayInstaller>(Location.Player);
             // zenjector.Install<MenuBindingsInstaller>(Location.Menu);
-            
+            zenjector.UseLogger(logger);
             Log.Info("KeyRemapper initialized.");
         }
 

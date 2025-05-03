@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
 using IPA.Config.Stores.Attributes;
-using IPA.Config.Stores.Converters;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 
@@ -39,21 +39,21 @@ internal class ActionSettings
 
 internal class ActionBinding
 {
-    [UseConverter(typeof(ListConverter<string>))]
+    [UseConverter]
     [SerializedName("Bindings")]
-    protected virtual List<string> BindingsInternal { get; set; } = [];
+    protected virtual HashSet<ControllerButton> BindingsInternal { get; set; } = [];
 
     public virtual bool BlockBuiltIn { get; set; } = false;
 
-    public IReadOnlyList<string> Bindings => BindingsInternal.AsReadOnly();
+    public IReadOnlyList<ControllerButton> Bindings => BindingsInternal.ToArray();
 
-    public void AddBinding(string binding)
+    public void AddBinding(ControllerButton binding)
     {
         BindingsInternal.Add(binding);
         Changed(); // 触发保存
     }
 
-    public void RemoveBinding(string binding)
+    public void RemoveBinding(ControllerButton binding)
     {
         BindingsInternal.Remove(binding);
         Changed(); // 触发保存
@@ -65,9 +65,30 @@ internal class ActionBinding
         BlockBuiltIn = false;
         Changed(); // 触发保存
     }
+    
+    public bool Contains(ControllerButton binding)
+    {
+        return BindingsInternal.Contains(binding);
+    }
 
     protected virtual void Changed()
     {
         // BSIPA 会重写此方法，调用时会触发保存
     }
+}
+
+public enum ControllerButton
+{
+    L_X,
+    L_Y,
+    R_A,
+    R_B,
+    L_Grip,
+    R_Grip,
+    L_Trigger,
+    R_Trigger,
+    L_Stick,
+    R_Stick,
+    L_Menu,
+    R_Menu
 }
