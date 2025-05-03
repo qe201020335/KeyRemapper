@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
@@ -55,7 +56,7 @@ internal class ActionBinding
     //创建只读防止外部修改
     //并防止设置重载时发生并发修改 （取决于 BSIPA 是否会生成新集合实例）
     [Ignore]
-    public IReadOnlyList<ControllerButton> Bindings { get; private set; } = [];
+    public IReadOnlyList<ControllerButton> Bindings { get; private set; } = Array.Empty<ControllerButton>();
 
     public void AddBinding(ControllerButton binding)
     {
