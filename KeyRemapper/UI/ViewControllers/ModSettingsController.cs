@@ -89,8 +89,7 @@ internal class ModSettingsController : BSMLAutomaticViewController
     [UIAction("ResetBtn")]
     private void OnReset()
     {
-        // _cfg.Bindings.Clear();
-        _cfg.Changed();
+        // _cfg.Actions.Reset();
         RefreshTable();
     }
 

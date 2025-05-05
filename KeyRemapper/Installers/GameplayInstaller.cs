@@ -1,12 +1,17 @@
-﻿using Zenject;
-using KeyRemapper.Logic;
+﻿using KeyRemapper.BindingHandlers;
+using KeyRemapper.Patches;
+using Zenject;
 
 namespace KeyRemapper.Installers;
 
-public class GameplayInstaller : Installer
+internal class GameplayInstaller : Installer
 {
     public override void InstallBindings()
     {
-        Container.BindInterfacesAndSelfTo<OpenXRPausePatch>().AsSingle();
+        if (Container.TryResolve<IVRPlatformHelper>()?.vrPlatformSDK == VRPlatformSDK.OpenXR)
+        {
+            Container.BindInterfacesTo<RemapBaseGameMenuButton>().AsSingle().NonLazy();
+            Container.BindInterfacesTo<RestartHandler>().AsSingle().NonLazy();
+        }
     }
 }
