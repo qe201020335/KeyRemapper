@@ -2,8 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
   "id": "KeyRemapper",
   "name": "KeyRemapper",
-  "author": "",
-  "version": "0.0.1",
+  "author": "Estrella",
+  "version": "0.1.0",
   "description": "",
   "gameVersion": "1.39.1",
   "dependsOn": {
