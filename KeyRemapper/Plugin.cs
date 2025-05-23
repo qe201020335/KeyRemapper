@@ -22,7 +22,7 @@ namespace KeyRemapper
             zenjector.Install<AppInstaller>(Location.App, PluginConfig.Instance);
             zenjector.Install<GameplayInstaller>(Location.Player);
             // 先不显示界面
-            // zenjector.Install<MenuBindingsInstaller>(Location.Menu);
+            zenjector.Install<MenuBindingsInstaller>(Location.Menu);
             zenjector.UseLogger(logger);
             Log.Info("KeyRemapper initialized.");
         }

@@ -1,0 +1,14 @@
+<horizontal spacing='2' pref-height='8' pref-width='76' horizontal-fit='PreferredSize' vertical-fit='PreferredSize'>
+    <dropdown-list-setting 
+        pref-width='50' 
+        pref-height='8'
+        choices='button-options' 
+        value='selected-button'
+        apply-on-change='true'
+        on-change='button-changed'/>
+    <button text='Delete' 
+           pref-width='20' 
+           pref-height='8'
+           on-click='delete-clicked'
+           hover-hint='Remove this key binding'/>
+</horizontal> 

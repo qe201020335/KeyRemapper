@@ -53,6 +53,8 @@ internal class ActionBinding
     [SerializedName("Bindings")]
     protected virtual HashSet<ControllerButton> BindingsInternal { get; set; } = [];
 
+    public virtual bool Enabled { get; set; } = false;
+
     //创建只读防止外部修改
     //并防止设置重载时发生并发修改 （取决于 BSIPA 是否会生成新集合实例）
     [Ignore]
@@ -73,6 +75,14 @@ internal class ActionBinding
     public virtual void Reset()
     {
         BindingsInternal.Clear();
+        Changed(); // 触发保存
+    }
+
+    public virtual void SetBindings(IEnumerable<ControllerButton> bindings)
+    {
+        BindingsInternal.Clear();
+        foreach (var binding in bindings)
+            BindingsInternal.Add(binding);
         Changed(); // 触发保存
     }
 

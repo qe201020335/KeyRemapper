@@ -123,7 +123,7 @@
   
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
-    <Content Include="UI\Views\KeyEntryCell.bsml" />
-    <Content Include="UI\Views\ModSettings.bsml" />
+    <EmbeddedResource Include="UI\Views\keyRemapperSettings.bsml" />
+    <EmbeddedResource Include="UI\Views\bindingRow.bsml" />
   </ItemGroup>
 </Project>
