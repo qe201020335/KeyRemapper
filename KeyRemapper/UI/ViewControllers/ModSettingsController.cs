@@ -12,12 +12,12 @@ using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using KeyRemapper.Configuration;
+using KeyRemapper.UI.helpers;
 using SiraUtil.Logging;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
-using KeyRemapper.UI.helpers;
 
 namespace KeyRemapper.UI.ViewControllers;
 
@@ -105,10 +105,14 @@ internal class ModSettingsController : BSMLAutomaticViewController, TableView.ID
         
         _logger.Debug($"Creating cell for {currentListType} at index {idx}, button: {button}");
         
+        // 获取可用按钮列表
+        var availableButtons = GetAvailableButtons(bindingList, button);
+        
         cell.PopulateWithButton(
             button,
+            availableButtons,
             (c) => OnDeleteBinding(c, button, bindingList),
-            (c) => OnButtonClick(c, bindingList)
+            (c, newButton) => OnButtonChanged(c, newButton, bindingList)
         );
         
         return cell;
@@ -274,35 +278,18 @@ internal class ModSettingsController : BSMLAutomaticViewController, TableView.ID
         }
     }
     
-    private void OnButtonClick(BindingTableCell cell, List<ControllerButton> bindingList)
+    private void OnButtonChanged(BindingTableCell cell, ControllerButton newButton, List<ControllerButton> bindingList)
     {
-        _logger.Debug($"Button clicked for {cell.CurrentButton}");
+        _logger.Debug($"Button changed to {newButton}");
         
-        // 获取当前按钮的索引
-        var currentIndex = bindingList.IndexOf(cell.CurrentButton);
-        if (currentIndex < 0) return;
+        // 获取旧按钮的索引
+        var oldButton = bindingList.FirstOrDefault(b => b == cell.CurrentButton);
+        var index = bindingList.IndexOf(oldButton);
         
-        // 获取所有可用的按钮（排除已使用的）
-        var availableButtons = GetAvailableButtons(bindingList, cell.CurrentButton);
-        
-        if (availableButtons.Count <= 1)
-        {
-            _logger.Warn("No other buttons available to switch to");
-            return;
-        }
-        
-        // 获取当前按钮在可用列表中的位置
-        var currentButtonStr = cell.CurrentButton.ToString();
-        var availableIndex = availableButtons.FindIndex(b => b.ToString() == currentButtonStr);
-        
-        // 循环到下一个可用按钮
-        var nextIndex = (availableIndex + 1) % availableButtons.Count;
-        var nextButtonStr = availableButtons[nextIndex].ToString();
-        
-        if (Enum.TryParse<ControllerButton>(nextButtonStr, out var nextButton))
+        if (index >= 0)
         {
             // 更新绑定列表
-            bindingList[currentIndex] = nextButton;
+            bindingList[index] = newButton;
             
             // 更新UI
             UpdateUI(bindingList == pauseBindings ? ListType.Pause : ListType.Restart);
@@ -310,7 +297,7 @@ internal class ModSettingsController : BSMLAutomaticViewController, TableView.ID
             // 保存配置
             SaveConfig();
             
-            _logger.Debug($"Changed button from {cell.CurrentButton} to {nextButton}");
+            _logger.Debug($"Changed button at index {index} to {newButton}");
         }
     }
 
@@ -321,11 +308,16 @@ internal class ModSettingsController : BSMLAutomaticViewController, TableView.ID
             .Where(b => currentButton == null || b != currentButton)
             .ToHashSet();
         
-        return Enum.GetValues(typeof(ControllerButton))
+        var availableButtons = Enum.GetValues(typeof(ControllerButton))
             .Cast<ControllerButton>()
             .Where(b => currentButton == b || !usedButtons.Contains(b))
             .Select(b => (object)b.ToString())
             .ToList();
+        
+        _logger.Debug($"GetAvailableButtons called - currentButton: {currentButton}, usedButtons: {string.Join(", ", usedButtons)}");
+        _logger.Debug($"Available buttons: {string.Join(", ", availableButtons)}");
+        
+        return availableButtons;
     }
 
     // 更新UI

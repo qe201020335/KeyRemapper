@@ -130,5 +130,6 @@
     <EmbeddedResource Include="manifest.json" />
     <EmbeddedResource Include="UI\Views\keyRemapperSettings.bsml" />
     <EmbeddedResource Include="UI\Views\bindingRow.bsml" />
+    <EmbeddedResource Include="UI\Views\buttonSelectorModal.bsml" />
   </ItemGroup>
 </Project>

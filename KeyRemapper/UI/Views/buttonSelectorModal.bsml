@@ -1,0 +1,23 @@
+<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+    <modal id='button-selector-modal' show-event='show-modal' hide-event='hide-modal' size-delta-x='70' size-delta-y='65' move-to-center='true'>
+        <vertical preferred-width='65' preferred-height='60' pad='2'>
+            <text text='选择按钮' font-size='5' align='Center' underlined='true'/>
+            <horizontal pad-top='2' pad-bottom='2'>
+                <text text='~currentButtonText' font-size='4' align='Center' color='#00ff00'/>
+            </horizontal>
+            <scrollable-container size-delta-y='35' size-delta-x='60'>
+                <vertical spacing='1'>
+                    <text text='左手控制器' font-size='4' align='Center' color='#4080ff'/>
+                    <vertical id='leftHandButtons' spacing='0.5' bg='round-rect-panel' pad='1'>
+                    </vertical>
+                    <text text='右手控制器' font-size='4' align='Center' color='#ff8040' pad-top='2'/>
+                    <vertical id='rightHandButtons' spacing='0.5' bg='round-rect-panel' pad='1'>
+                    </vertical>
+                </vertical>
+            </scrollable-container>
+            <horizontal pad-top='2'>
+                <button text='取消' click-event='hide-modal' preferred-width='25' preferred-height='8'/>
+            </horizontal>
+        </vertical>
+    </modal>
+</bg> 
