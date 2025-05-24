@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Components.Settings;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
@@ -14,61 +17,101 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using KeyRemapper.UI.helpers;
 
 namespace KeyRemapper.UI.ViewControllers;
 
 [HotReload(RelativePathToLayout = @"..\Views\keyRemapperSettings.bsml")]
 [ViewDefinition("KeyRemapper.UI.Views.keyRemapperSettings.bsml")]
-internal class ModSettingsController : BSMLAutomaticViewController
+internal class ModSettingsController : BSMLAutomaticViewController, TableView.IDataSource, INotifyPropertyChanged
 {
     [Inject] private readonly PluginConfig _config;
     [Inject] private readonly SiraLog _logger;
 
-    // UI组件引用（将在后续实现中使用）
-    [UIComponent("pause-bindings-container")] 
-    private Transform pauseBindingsContainer;
+    // UI组件引用
+    [UIComponent("pauseBindingsList")] 
+    private CustomListTableData pauseBindingsList;
     
-    [UIComponent("restart-bindings-container")] 
-    private Transform restartBindingsContainer;
+    [UIComponent("restartBindingsList")] 
+    private CustomListTableData restartBindingsList;
+    
+    [UIComponent("pauseScrollBarContainer")]
+    private Transform pauseScrollBarContainer;
+    
+    [UIComponent("restartScrollBarContainer")]
+    private Transform restartScrollBarContainer;
+    
+    [UIComponent("pauseEmptyBindingsText")]
+    private TextMeshProUGUI pauseEmptyBindingsText;
+    
+    [UIComponent("restartEmptyBindingsText")]
+    private TextMeshProUGUI restartEmptyBindingsText;
 
     // 数据列表
-    private readonly List<BindingRowData> pauseBindingRows = new();
-    private readonly List<BindingRowData> restartBindingRows = new();
+    private readonly List<ControllerButton> pauseBindings = new();
+    private readonly List<ControllerButton> restartBindings = new();
+    
+    // 当前显示的列表类型
+    private enum ListType { None, Pause, Restart }
+    private ListType currentListType = ListType.None;
 
-    #region 数据结构定义
-
-    // 绑定行数据包装类
-    private class BindingRowData
+    #region INotifyPropertyChanged 实现
+    
+    public event PropertyChangedEventHandler PropertyChanged;
+    
+    protected virtual void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
     {
-        public ControllerButton Button { get; set; }
-        public GameObject UIObject { get; set; }
-        public Transform Container { get; set; }
-        public BindingRowController Controller { get; set; }
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+    
+    #endregion
+
+    #region TableView.IDataSource 实现
+
+    public float CellSize(int idx) => 8f;
+
+    public int NumberOfCells()
+    {
+        return currentListType switch
+        {
+            ListType.Pause => pauseBindings.Count,
+            ListType.Restart => restartBindings.Count,
+            _ => 0
+        };
     }
 
-    // 用于BSMLParser的数据上下文类
-    private class BindingRowController
+    public TableCell CellForIdx(TableView tableView, int idx)
     {
-        [UIValue("button-options")]
-        public List<object> ButtonOptions { get; set; } = new();
+        var cell = BindingTableData.GetCell(tableView);
         
-        [UIValue("selected-button")]
-        public string SelectedButton { get; set; } = "";
+        ControllerButton button;
+        List<ControllerButton> bindingList;
         
-        [UIAction("button-changed")]
-        public void OnButtonChanged(string newValue)
+        if (currentListType == ListType.Pause)
         {
-            ButtonChangedCallback?.Invoke(newValue);
+            button = pauseBindings[idx];
+            bindingList = pauseBindings;
+        }
+        else if (currentListType == ListType.Restart)
+        {
+            button = restartBindings[idx];
+            bindingList = restartBindings;
+        }
+        else
+        {
+            _logger.Warn($"CellForIdx called with invalid ListType: {currentListType}");
+            return cell;
         }
         
-        [UIAction("delete-clicked")]
-        public void OnDeleteClicked()
-        {
-            DeleteClickedCallback?.Invoke();
-        }
+        _logger.Debug($"Creating cell for {currentListType} at index {idx}, button: {button}");
         
-        public Action<string> ButtonChangedCallback { get; set; }
-        public Action DeleteClickedCallback { get; set; }
+        cell.PopulateWithButton(
+            button,
+            (c) => OnDeleteBinding(c, button, bindingList),
+            (c) => OnButtonClick(c, bindingList)
+        );
+        
+        return cell;
     }
 
     #endregion
@@ -117,8 +160,7 @@ internal class ModSettingsController : BSMLAutomaticViewController
     {
         _logger.Debug("AddPauseBinding clicked");
         
-        // 找到第一个未使用的按键
-        var availableButtons = GetAvailableButtons(pauseBindingRows);
+        var availableButtons = GetAvailableButtons(pauseBindings);
         if (!availableButtons.Any())
         {
             _logger.Warn("No available buttons to add");
@@ -126,27 +168,10 @@ internal class ModSettingsController : BSMLAutomaticViewController
         }
         
         var firstAvailable = Enum.Parse<ControllerButton>((string)availableButtons.First());
+        pauseBindings.Add(firstAvailable);
         
-        // 移除空状态文本
-        RemoveEmptyStateText(pauseBindingsContainer);
-        
-        // 创建新行
-        var newRow = CreateBindingRow(firstAvailable, pauseBindingsContainer, pauseBindingRows);
-        if (newRow != null)
-        {
-            pauseBindingRows.Add(newRow);
-            // 保存配置
-            SaveConfig();
-        }
-        else
-        {
-            _logger.Error("Failed to create pause binding row");
-            // 如果创建失败且列表为空，恢复空状态文本
-            if (!pauseBindingRows.Any())
-            {
-                ShowEmptyStateText(pauseBindingsContainer);
-            }
-        }
+        UpdateUI(ListType.Pause);
+        SaveConfig();
     }
 
     [UIAction("add-restart-binding")]
@@ -154,8 +179,7 @@ internal class ModSettingsController : BSMLAutomaticViewController
     {
         _logger.Debug("AddRestartBinding clicked");
         
-        // 找到第一个未使用的按键
-        var availableButtons = GetAvailableButtons(restartBindingRows);
+        var availableButtons = GetAvailableButtons(restartBindings);
         if (!availableButtons.Any())
         {
             _logger.Warn("No available buttons to add");
@@ -163,136 +187,138 @@ internal class ModSettingsController : BSMLAutomaticViewController
         }
         
         var firstAvailable = Enum.Parse<ControllerButton>((string)availableButtons.First());
+        restartBindings.Add(firstAvailable);
         
-        // 移除空状态文本
-        RemoveEmptyStateText(restartBindingsContainer);
-        
-        // 创建新行
-        var newRow = CreateBindingRow(firstAvailable, restartBindingsContainer, restartBindingRows);
-        if (newRow != null)
-        {
-            restartBindingRows.Add(newRow);
-            // 保存配置
-            SaveConfig();
-        }
-        else
-        {
-            _logger.Error("Failed to create restart binding row");
-            // 如果创建失败且列表为空，恢复空状态文本
-            if (!restartBindingRows.Any())
-            {
-                ShowEmptyStateText(restartBindingsContainer);
-            }
-        }
+        UpdateUI(ListType.Restart);
+        SaveConfig();
     }
 
     #endregion
 
     #region 生命周期方法
 
+    [UIAction("#post-parse")]
+    private void Parsed()
+    {
+        _logger.Debug("ModSettingsController parsed");
+        
+        // 设置Pause列表数据源
+        if (pauseBindingsList != null)
+        {
+            currentListType = ListType.Pause;
+            pauseBindingsList.TableView.SetDataSource(this, false);
+            _logger.Debug($"Pause list data source set, tableView: {pauseBindingsList.TableView}");
+            
+            // 添加滚动条
+            if (pauseScrollBarContainer != null)
+            {
+                ScrollbarHelper.AddScrollbar(pauseBindingsList.TableView.gameObject, pauseScrollBarContainer);
+                _logger.Debug("Pause scrollbar added");
+            }
+        }
+        else
+        {
+            _logger.Error("pauseBindingsList is null!");
+        }
+        
+        // 设置Restart列表数据源
+        if (restartBindingsList != null)
+        {
+            currentListType = ListType.Restart;
+            restartBindingsList.TableView.SetDataSource(this, false);
+            _logger.Debug($"Restart list data source set, tableView: {restartBindingsList.TableView}");
+            
+            // 添加滚动条
+            if (restartScrollBarContainer != null)
+            {
+                ScrollbarHelper.AddScrollbar(restartBindingsList.TableView.gameObject, restartScrollBarContainer);
+                _logger.Debug("Restart scrollbar added");
+            }
+        }
+        else
+        {
+            _logger.Error("restartBindingsList is null!");
+        }
+        
+        currentListType = ListType.None;
+        
+        // 加载配置
+        LoadFromConfig();
+    }
+
     protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
     {
         _logger.Debug("ModSettingsController activated");
         base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
-        
-        // 每次激活时都加载配置，而不仅仅是第一次
-        // 这样可以确保重新进入界面时绑定正确显示
-        if (firstActivation || !pauseBindingRows.Any() && !restartBindingRows.Any())
-        {
-            _logger.Debug("Loading bindings from config");
-            LoadFromConfig();
-        }
     }
 
     protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling)
     {
         _logger.Debug("ModSettingsController deactivated");
         base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
-        
-        // 不再清理UI，保持绑定行的状态
-        // 这样重新进入时UI仍然存在
-        // ClearBindingRows(pauseBindingRows);
-        // ClearBindingRows(restartBindingRows);
     }
 
     #endregion
 
     #region 辅助方法
 
-    private const string BindingRowResourceName = "KeyRemapper.UI.Views.bindingRow.bsml";
-
-    private BindingRowData CreateBindingRow(ControllerButton button, Transform parent, List<BindingRowData> bindingList)
+    private void OnDeleteBinding(BindingTableCell cell, ControllerButton buttonToDelete, List<ControllerButton> bindingList)
     {
-        _logger.Debug($"Creating binding row for button: {button}");
+        var index = bindingList.IndexOf(buttonToDelete);
         
-        // 创建数据上下文
-        var controller = new BindingRowController
+        if (index >= 0)
         {
-            SelectedButton = button.ToString(),
-            ButtonOptions = GetAvailableButtons(bindingList, button)
-        };
+            bindingList.RemoveAt(index);
+            UpdateUI(bindingList == pauseBindings ? ListType.Pause : ListType.Restart);
+            SaveConfig();
+        }
+    }
+    
+    private void OnButtonClick(BindingTableCell cell, List<ControllerButton> bindingList)
+    {
+        _logger.Debug($"Button clicked for {cell.CurrentButton}");
         
-        // 记录解析前的子对象数量
-        var childCountBefore = parent.childCount;
-        _logger.Debug($"Parent child count before: {childCountBefore}");
+        // 获取当前按钮的索引
+        var currentIndex = bindingList.IndexOf(cell.CurrentButton);
+        if (currentIndex < 0) return;
         
-        // 使用BSMLParser解析BSML
-        var parserParams = BSMLParser.Instance.Parse(
-            Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), BindingRowResourceName),
-            parent.gameObject,
-            controller
-        );
+        // 获取所有可用的按钮（排除已使用的）
+        var availableButtons = GetAvailableButtons(bindingList, cell.CurrentButton);
         
-        _logger.Debug($"Parent child count after: {parent.childCount}");
-        
-        // 获取新创建的GameObject（最后一个子对象）
-        GameObject uiObject = null;
-        if (parent.childCount > childCountBefore)
+        if (availableButtons.Count <= 1)
         {
-            uiObject = parent.GetChild(parent.childCount - 1).gameObject;
-            _logger.Debug($"Created UI object: {uiObject.name}");
+            _logger.Warn("No other buttons available to switch to");
+            return;
         }
         
-        if (uiObject == null)
+        // 获取当前按钮在可用列表中的位置
+        var currentButtonStr = cell.CurrentButton.ToString();
+        var availableIndex = availableButtons.FindIndex(b => b.ToString() == currentButtonStr);
+        
+        // 循环到下一个可用按钮
+        var nextIndex = (availableIndex + 1) % availableButtons.Count;
+        var nextButtonStr = availableButtons[nextIndex].ToString();
+        
+        if (Enum.TryParse<ControllerButton>(nextButtonStr, out var nextButton))
         {
-            _logger.Error("Failed to create binding row UI");
-            return null;
+            // 更新绑定列表
+            bindingList[currentIndex] = nextButton;
+            
+            // 更新UI
+            UpdateUI(bindingList == pauseBindings ? ListType.Pause : ListType.Restart);
+            
+            // 保存配置
+            SaveConfig();
+            
+            _logger.Debug($"Changed button from {cell.CurrentButton} to {nextButton}");
         }
-        
-        // 创建数据包装
-        var rowData = new BindingRowData
-        {
-            Button = button,
-            UIObject = uiObject,
-            Container = parent,
-            Controller = controller
-        };
-        
-        // 设置回调
-        controller.ButtonChangedCallback = (newValue) => {
-            if (Enum.TryParse<ControllerButton>(newValue, out var newButton))
-            {
-                _logger.Debug($"Button changed from {rowData.Button} to {newButton}");
-                rowData.Button = newButton;
-                UpdateAllDropdowns(bindingList);
-                SaveConfig();
-            }
-        };
-        
-        controller.DeleteClickedCallback = () => {
-            _logger.Debug($"Delete button clicked for {rowData.Button}");
-            DeleteBindingRow(rowData, bindingList);
-        };
-        
-        return rowData;
     }
 
     // 获取可用按键列表
-    private List<object> GetAvailableButtons(List<BindingRowData> currentBindings, ControllerButton? currentButton = null)
+    private List<object> GetAvailableButtons(List<ControllerButton> currentBindings, ControllerButton? currentButton = null)
     {
         var usedButtons = currentBindings
-            .Where(b => currentButton == null || b.Button != currentButton)
-            .Select(b => b.Button)
+            .Where(b => currentButton == null || b != currentButton)
             .ToHashSet();
         
         return Enum.GetValues(typeof(ControllerButton))
@@ -302,92 +328,41 @@ internal class ModSettingsController : BSMLAutomaticViewController
             .ToList();
     }
 
-    // 更新所有下拉列表的可用选项
-    private void UpdateAllDropdowns(List<BindingRowData> bindingList)
+    // 更新UI
+    private void UpdateUI(ListType listType)
     {
-        foreach (var row in bindingList)
+        currentListType = listType;
+        
+        if (listType == ListType.Pause && pauseBindingsList != null)
         {
-            row.Controller.ButtonOptions = GetAvailableButtons(bindingList, row.Button);
-            // 触发UI更新
-            NotifyPropertyChanged(nameof(row.Controller.ButtonOptions));
-        }
-    }
-
-    // 删除绑定行
-    private void DeleteBindingRow(BindingRowData row, List<BindingRowData> bindingList)
-    {
-        // 从列表移除
-        bindingList.Remove(row);
-        
-        // 销毁UI对象
-        if (row.UIObject != null)
-            Destroy(row.UIObject);
-        
-        // 如果列表为空，显示空状态文本
-        if (!bindingList.Any())
-        {
-            ShowEmptyStateText(row.Container);
-        }
-        
-        // 更新其他行的可用选项
-        UpdateAllDropdowns(bindingList);
-        
-        // 保存配置
-        SaveConfig();
-    }
-
-    // 移除空状态文本
-    private void RemoveEmptyStateText(Transform container)
-    {
-        // 查找名为"EmptyText"的子对象
-        for (int i = 0; i < container.childCount; i++)
-        {
-            var child = container.GetChild(i);
-            if (child.name == "EmptyText")
+            pauseBindingsList.TableView.ReloadData();
+            pauseEmptyBindingsText.gameObject.SetActive(pauseBindings.Count == 0);
+            pauseBindingsList.gameObject.SetActive(pauseBindings.Count > 0);
+            
+            // 如果添加了新项，滚动到底部
+            if (pauseBindings.Count > 0)
             {
-                _logger.Debug("Removing empty state text");
-                Destroy(child.gameObject);
-                return;
+                pauseBindingsList.TableView.ScrollToCellWithIdx(pauseBindings.Count - 1, TableView.ScrollPositionType.End, false);
             }
+            
+            _logger.Debug($"Updated Pause UI - Count: {pauseBindings.Count}, List visible: {pauseBindings.Count > 0}");
         }
-        
-        // 兼容旧方式 - 如果没有找到EmptyText，尝试找包含特定文本的对象
-        var emptyText = container.GetComponentInChildren<TextMeshProUGUI>();
-        if (emptyText != null && emptyText.text == "No key bindings added")
+        else if (listType == ListType.Restart && restartBindingsList != null)
         {
-            _logger.Debug("Removing empty state text (legacy)");
-            Destroy(emptyText.gameObject);
+            restartBindingsList.TableView.ReloadData();
+            restartEmptyBindingsText.gameObject.SetActive(restartBindings.Count == 0);
+            restartBindingsList.gameObject.SetActive(restartBindings.Count > 0);
+            
+            // 如果添加了新项，滚动到底部
+            if (restartBindings.Count > 0)
+            {
+                restartBindingsList.TableView.ScrollToCellWithIdx(restartBindings.Count - 1, TableView.ScrollPositionType.End, false);
+            }
+            
+            _logger.Debug($"Updated Restart UI - Count: {restartBindings.Count}, List visible: {restartBindings.Count > 0}");
         }
-    }
-
-    // 显示空状态文本
-    private void ShowEmptyStateText(Transform container)
-    {
-        var textGO = new GameObject("EmptyText");
-        textGO.transform.SetParent(container, false);
         
-        var text = textGO.AddComponent<TextMeshProUGUI>();
-        text.text = "No key bindings added";
-        text.fontSize = 3.5f;
-        text.color = new Color(0.5f, 0.5f, 0.5f, 1f);
-        text.alignment = TextAlignmentOptions.Center;
-        
-        var rectTransform = textGO.GetComponent<RectTransform>();
-        rectTransform.anchorMin = Vector2.zero;
-        rectTransform.anchorMax = Vector2.one;
-        rectTransform.sizeDelta = Vector2.zero;
-        rectTransform.anchoredPosition = Vector2.zero;
-    }
-
-    // 清空绑定行
-    private void ClearBindingRows(List<BindingRowData> bindingList)
-    {
-        foreach (var row in bindingList)
-        {
-            if (row.UIObject != null)
-                Destroy(row.UIObject);
-        }
-        bindingList.Clear();
+        currentListType = ListType.None;
     }
 
     // 从配置加载
@@ -395,74 +370,21 @@ internal class ModSettingsController : BSMLAutomaticViewController
     {
         _logger.Debug("Loading bindings from config");
         
-        // 检查容器引用
-        if (pauseBindingsContainer == null)
-        {
-            _logger.Error("pauseBindingsContainer is null!");
-            return;
-        }
-        if (restartBindingsContainer == null)
-        {
-            _logger.Error("restartBindingsContainer is null!");
-            return;
-        }
-        
-        _logger.Debug($"pauseBindingsContainer: {pauseBindingsContainer}");
-        _logger.Debug($"restartBindingsContainer: {restartBindingsContainer}");
-        
-        // 清空现有UI
-        ClearBindingRows(pauseBindingRows);
-        ClearBindingRows(restartBindingRows);
+        // 清空现有数据
+        pauseBindings.Clear();
+        restartBindings.Clear();
         
         // 加载Pause绑定
-        if (_config.Actions.Pause.Bindings.Any())
-        {
-            RemoveEmptyStateText(pauseBindingsContainer);
-            foreach (var button in _config.Actions.Pause.Bindings)
-            {
-                var row = CreateBindingRow(button, pauseBindingsContainer, pauseBindingRows);
-                if (row != null)
-                {
-                    pauseBindingRows.Add(row);
-                }
-                else
-                {
-                    _logger.Error($"Failed to create pause binding row for button: {button}");
-                }
-            }
-            _logger.Debug($"Loaded {pauseBindingRows.Count} pause bindings");
-            
-            // 如果所有绑定都创建失败，显示空状态文本
-            if (!pauseBindingRows.Any())
-            {
-                ShowEmptyStateText(pauseBindingsContainer);
-            }
-        }
+        pauseBindings.AddRange(_config.Actions.Pause.Bindings);
+        _logger.Debug($"Loaded {pauseBindings.Count} pause bindings");
         
         // 加载Restart绑定
-        if (_config.Actions.Restart.Bindings.Any())
-        {
-            RemoveEmptyStateText(restartBindingsContainer);
-            foreach (var button in _config.Actions.Restart.Bindings)
-            {
-                var row = CreateBindingRow(button, restartBindingsContainer, restartBindingRows);
-                if (row != null)
-                {
-                    restartBindingRows.Add(row);
-                }
-                else
-                {
-                    _logger.Error($"Failed to create restart binding row for button: {button}");
-                }
-            }
-            _logger.Debug($"Loaded {restartBindingRows.Count} restart bindings");
-            
-            // 如果所有绑定都创建失败，显示空状态文本
-            if (!restartBindingRows.Any())
-            {
-                ShowEmptyStateText(restartBindingsContainer);
-            }
-        }
+        restartBindings.AddRange(_config.Actions.Restart.Bindings);
+        _logger.Debug($"Loaded {restartBindings.Count} restart bindings");
+        
+        // 更新UI
+        UpdateUI(ListType.Pause);
+        UpdateUI(ListType.Restart);
     }
 
     // 保存配置
@@ -471,19 +393,13 @@ internal class ModSettingsController : BSMLAutomaticViewController
         _logger.Debug("Saving bindings to config");
         
         // 保存Pause绑定
-        _config.Actions.Pause.SetBindings(pauseBindingRows.Select(r => r.Button));
+        _config.Actions.Pause.SetBindings(pauseBindings);
         
-        // 保存Restart绑定
-        _config.Actions.Restart.SetBindings(restartBindingRows.Select(r => r.Button));
+        // 保存Restart绑定  
+        _config.Actions.Restart.SetBindings(restartBindings);
         
         _logger.Debug("Config saved");
     }
-
-    // 按键选项列表（供后续下拉列表使用）
-    private static readonly List<object> ButtonOptionsCache = 
-        Enum.GetNames(typeof(ControllerButton))
-            .Select(x => (object)x)
-            .ToList();
 
     #endregion
 }

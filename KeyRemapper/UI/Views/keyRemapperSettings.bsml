@@ -1,65 +1,45 @@
-﻿<vertical child-control-height='false' spacing="1">
+﻿<vertical child-control-height='false' preferred-width='120'>
     <macro.define id="tab-width" value="90"/>
     <tab-selector tab-tag='tabs'/>
 
     <!-- Pause Tab -->
     <tab tags="tabs" tab-name="Pause">
-        <modifier-container child-expand-width='true' horizontal-fit='PreferredSize'>
-            <toggle-setting text="Enable this feature" value="pause-enabled" apply-on-change="true"/>
-            <toggle-setting text="Block built-in pause button" value="pause-block-builtin" apply-on-change="true"/>
-            
-            <horizontal pad-top="3" pad-bottom="2">
-                <text text="Key Bindings" font-size="4" align="Left"/>
-            </horizontal>
-            
-            <!-- 暂时简化布局，直接使用vertical容器 -->
-            <vertical id="pause-bindings-container" 
-                    spacing="1.5" 
-                    pad="2"
-                    bg='round-rect-panel'
-                    preferred-width='80'
-                    preferred-height='25'
-                    horizontal-fit='PreferredSize'
-                    vertical-fit='PreferredSize'>
-                <text text="No key bindings added" font-size="3.5" color="#808080" align="Center"/>
+        <horizontal child-control-width='false' child-expand-width='false' pref-height='65' vertical-fit='PreferredSize'>
+            <!-- 左侧面板 (列表区) -->
+            <vertical pref-width='70' min-width='60' pad-right='2'>
+                <list id='pauseBindingsList' visible-cells='6'/>
+                <text id="pauseEmptyBindingsText" text="没有已添加的按键绑定" font-size="3.5" color="#808080" align="Center" visible='true'/>
             </vertical>
             
-            <horizontal pad-top="3">
-                <button text="+ Add Key Binding" 
-                       on-click="add-pause-binding" 
-                       pref-width="40"
-                       pref-height="8"/>
-            </horizontal>
-        </modifier-container>
+            <!-- 滚动条容器 -->
+            <vertical pref-width='8' id='pauseScrollBarContainer' vertical-fit='Unconstrained'/>
+
+            <!-- 右侧面板 (控制区) -->
+            <vertical pref-width='40' min-width='35' spacing='2' pad-left='2'>
+                <toggle-setting text="启用" value="pause-enabled" apply-on-change="true"/>
+                <toggle-setting text="禁用内置暂停" value="pause-block-builtin" apply-on-change="true"/>
+                <button text="+ 添加按键绑定" on-click="add-pause-binding" pref-height="8"/>
+            </vertical>
+        </horizontal>
     </tab>
 
     <!-- Restart Tab -->
     <tab tags="tabs" tab-name="Restart">
-        <modifier-container child-expand-width='true' horizontal-fit='PreferredSize'>
-            <toggle-setting text="Enable this feature" value="restart-enabled" apply-on-change="true"/>
-            
-            <horizontal pad-top="3" pad-bottom="2">
-                <text text="Key Bindings" font-size="4" align="Left"/>
-            </horizontal>
-            
-            <!-- 暂时简化布局，直接使用vertical容器 -->
-            <vertical id="restart-bindings-container" 
-                    spacing="1.5" 
-                    pad="2"
-                    bg='round-rect-panel'
-                    preferred-width='80'
-                    preferred-height='25'
-                    horizontal-fit='PreferredSize'
-                    vertical-fit='PreferredSize'>
-                <text text="No key bindings added" font-size="3.5" color="#808080" align="Center"/>
+        <horizontal child-control-width='false' child-expand-width='false' pref-height='65' vertical-fit='PreferredSize'>
+            <!-- 左侧面板 (列表区) -->
+            <vertical pref-width='70' min-width='60' pad-right='2'>
+                <list id='restartBindingsList' visible-cells='6'/>
+                <text id="restartEmptyBindingsText" text="没有已添加的按键绑定" font-size="3.5" color="#808080" align="Center" visible='true'/>
             </vertical>
             
-            <horizontal pad-top="3">
-                <button text="+ Add Key Binding" 
-                       on-click="add-restart-binding" 
-                       pref-width="40"
-                       pref-height="8"/>
-            </horizontal>
-        </modifier-container>
+            <!-- 滚动条容器 -->
+            <vertical pref-width='8' id='restartScrollBarContainer' vertical-fit='Unconstrained'/>
+
+            <!-- 右侧面板 (控制区) -->
+            <vertical pref-width='40' min-width='35' spacing='2' pad-left='2'>
+                <toggle-setting text="启用" value="restart-enabled" apply-on-change="true"/>
+                <button text="+ 添加按键绑定" on-click="add-restart-binding" pref-height="8"/>
+            </vertical>
+        </horizontal>
     </tab>
 </vertical>

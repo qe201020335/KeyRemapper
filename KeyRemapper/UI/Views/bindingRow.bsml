@@ -1,14 +1,17 @@
-<horizontal spacing='2' pref-height='8' pref-width='76' horizontal-fit='PreferredSize' vertical-fit='PreferredSize'>
-    <dropdown-list-setting 
-        pref-width='50' 
-        pref-height='8'
-        choices='button-options' 
-        value='selected-button'
-        apply-on-change='true'
-        on-change='button-changed'/>
+<horizontal bg='round-rect-panel' pad='1' spacing='1' height='8' pref-width='85' horizontal-fit='PreferredSize' vertical-fit='PreferredSize'>
+    <clickable-text id='buttonText'
+                    text='L_X' 
+                    pref-width='50' 
+                    pref-height='7'
+                    on-click='button-clicked'
+                    align='Center'
+                    font-size='3.5'
+                    hover-hint='Click to change button'/>
     <button text='Delete' 
+           id='deleteButton'
            pref-width='20' 
-           pref-height='8'
+           pref-height='7'
            on-click='delete-clicked'
-           hover-hint='Remove this key binding'/>
+           hover-hint='Remove this key binding'
+           interactable='true'/>
 </horizontal> 
