@@ -1,8 +1,8 @@
-<horizontal bg='round-rect-panel' pad='1' spacing='1' height='8' pref-width='85' horizontal-fit='PreferredSize' vertical-fit='PreferredSize'>
+<horizontal id='bgContainer' bg='round-rect-panel' pad='2' spacing='2' height='8' pref-width='68' horizontal-fit='PreferredSize' vertical-fit='PreferredSize'>
     <dropdown-list-setting 
         id='buttonDropdown'
         text=''
-        pref-width='50' 
+        pref-width='45' 
         pref-height='7'
         choices='button-options' 
         value='selected-button'
@@ -11,7 +11,7 @@
         on-change='button-changed'/>
     <button text='Delete' 
            id='deleteButton'
-           pref-width='20' 
+           pref-width='16' 
            pref-height='7'
            on-click='delete-clicked'
            hover-hint='Remove this key binding'

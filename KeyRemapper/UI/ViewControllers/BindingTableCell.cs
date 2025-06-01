@@ -24,6 +24,9 @@ namespace KeyRemapper.UI.ViewControllers
         [UIComponent("deleteButton")] 
         private Button deleteButton;
         
+        [UIComponent("bgContainer")]
+        private ImageView bgContainer;
+        
         private ControllerButton currentButton;
         private Action<BindingTableCell> onDeleteClicked;
         private Action<BindingTableCell, ControllerButton> onButtonChanged;
@@ -70,6 +73,36 @@ namespace KeyRemapper.UI.ViewControllers
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         
+        protected override void Start()
+        {
+            base.Start();
+            
+            // 隐藏默认的 TableCell 背景
+            // TableCell 有两个背景图像：_bg 和 _highlightBG
+            var bgField = typeof(TableCell).GetField("_bg", BindingFlags.NonPublic | BindingFlags.Instance);
+            var highlightBgField = typeof(TableCell).GetField("_highlightBG", BindingFlags.NonPublic | BindingFlags.Instance);
+            
+            if (bgField != null)
+            {
+                var bg = bgField.GetValue(this) as Image;
+                if (bg != null)
+                {
+                    bg.enabled = false;
+                    Plugin.Log?.Debug("Disabled TableCell default background");
+                }
+            }
+            
+            if (highlightBgField != null)
+            {
+                var highlightBg = highlightBgField.GetValue(this) as Image;
+                if (highlightBg != null)
+                {
+                    highlightBg.enabled = false;
+                    Plugin.Log?.Debug("Disabled TableCell highlight background");
+                }
+            }
+        }
+
         [UIAction("button-changed")]
         private void OnButtonChanged(string newValue)
         {
@@ -117,6 +150,9 @@ namespace KeyRemapper.UI.ViewControllers
             NotifyPropertyChanged(nameof(SelectedButton));
             
             Plugin.Log?.Debug("NotifyPropertyChanged called for both properties");
+            
+            // 刷新背景
+            RefreshBackground();
             
             // 手动刷新下拉框
             if (buttonDropdown != null)
@@ -184,7 +220,12 @@ namespace KeyRemapper.UI.ViewControllers
         
         private void RefreshBackground()
         {
-            // 可以在这里调整背景颜色
+            // 如果有自定义背景容器，设置其颜色
+            if (bgContainer != null)
+            {
+                // 根据状态设置不同的透明度
+                bgContainer.color = new Color(0, 0, 0, selected ? 1f : highlighted ? 0.4f : 0.25f);
+            }
         }
     }
 } 
