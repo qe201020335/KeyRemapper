@@ -397,3 +397,18 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .idea/
+
+# Claude Code
+CLAUDE.md
+
+# Cursor
+.cursor/
+
+# VS Code (already covered above, but being explicit)
+.vscode/
+
+# Archive folder
+archive/
+
+# Documentation folders
+docs/

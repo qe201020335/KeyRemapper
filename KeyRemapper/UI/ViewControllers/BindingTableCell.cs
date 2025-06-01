@@ -90,42 +90,6 @@ namespace KeyRemapper.UI.ViewControllers
         
         public ControllerButton CurrentButton => currentButton;
         
-        // 添加协程刷新方法
-        private IEnumerator RefreshDropdownNextFrame()
-        {
-            yield return null; // 等待一帧
-            
-            if (buttonDropdown != null)
-            {
-                Plugin.Log?.Debug("Refreshing dropdown on next frame");
-                
-                try
-                {
-                    // 通过反射获取和设置Value属性
-                    var valueProperty = buttonDropdown.GetType().GetProperty("Value", 
-                        BindingFlags.Public | BindingFlags.Instance);
-                    
-                    if (valueProperty != null && valueProperty.CanRead && valueProperty.CanWrite)
-                    {
-                        // 重新设置值以触发UI更新
-                        var currentValue = valueProperty.GetValue(buttonDropdown) as string;
-                        valueProperty.SetValue(buttonDropdown, "");
-                        valueProperty.SetValue(buttonDropdown, currentValue ?? selectedButton);
-                        
-                        Plugin.Log?.Debug("Dropdown refresh completed");
-                    }
-                    else
-                    {
-                        Plugin.Log?.Warn("Could not find or access Value property");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.Error($"Error in RefreshDropdownNextFrame: {ex.Message}");
-                }
-            }
-        }
-
         public void PopulateWithButton(
             ControllerButton button, 
             List<object> availableOptions,
@@ -206,9 +170,6 @@ namespace KeyRemapper.UI.ViewControllers
             {
                 Plugin.Log?.Warn("buttonDropdown is null, cannot refresh");
             }
-            
-            // 在下一帧再次尝试刷新
-            StartCoroutine(RefreshDropdownNextFrame());
         }
 
         protected override void SelectionDidChange(TransitionType transitionType)

@@ -110,11 +110,7 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
-    <None Include="KeyRemapper.csproj.user" Condition="Exists('KeyRemapper.csproj.user')" />
-    <None Remove="UI\Views\bindingRow.bsml.backup2" />
-  </ItemGroup>
+    <ItemGroup>    <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />    <None Include="KeyRemapper.csproj.user" Condition="Exists('KeyRemapper.csproj.user')" />  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BeatSaberModdingTools.Tasks">
       <Version>2.0.0-beta7</Version>
@@ -126,10 +122,9 @@
     </PackageReference>
   </ItemGroup>
   
-  <ItemGroup>
-    <EmbeddedResource Include="manifest.json" />
-    <EmbeddedResource Include="UI\Views\keyRemapperSettings.bsml" />
-    <EmbeddedResource Include="UI\Views\bindingRow.bsml" />
-    <EmbeddedResource Include="UI\Views\buttonSelectorModal.bsml" />
+  <ItemGroup>    
+    <EmbeddedResource Include="manifest.json" />    
+    <EmbeddedResource Include="UI\Views\keyRemapperSettings.bsml" />    
+    <EmbeddedResource Include="UI\Views\bindingRow.bsml" />  
   </ItemGroup>
 </Project>
