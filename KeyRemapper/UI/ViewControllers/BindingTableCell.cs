@@ -224,7 +224,7 @@ namespace KeyRemapper.UI.ViewControllers
             if (bgContainer != null)
             {
                 // 根据状态设置不同的透明度
-                bgContainer.color = new Color(0, 0, 0, selected ? 1f : highlighted ? 0.4f : 0.25f);
+                bgContainer.color = new Color(0, 0, 0, 0f);
             }
         }
     }
