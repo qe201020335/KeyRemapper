@@ -305,12 +305,12 @@ internal class ModSettingsController : BSMLAutomaticViewController, TableView.ID
     private List<object> GetAvailableButtons(List<ControllerButton> currentBindings, ControllerButton? currentButton = null)
     {
         var usedButtons = currentBindings
-            .Where(b => currentButton == null || b != currentButton)
+            .Where(b => !currentButton.HasValue || b != currentButton.Value)
             .ToHashSet();
         
         var availableButtons = Enum.GetValues(typeof(ControllerButton))
             .Cast<ControllerButton>()
-            .Where(b => currentButton == b || !usedButtons.Contains(b))
+            .Where(b => (currentButton.HasValue && currentButton.Value == b) || !usedButtons.Contains(b))
             .Select(b => (object)b.ToString())
             .ToList();
         
