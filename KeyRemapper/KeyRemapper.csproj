@@ -110,7 +110,12 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
     </Reference>
   </ItemGroup>
-    <ItemGroup>    <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />    <None Include="KeyRemapper.csproj.user" Condition="Exists('KeyRemapper.csproj.user')" />  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
+    <None Include="KeyRemapper.csproj.user" Condition="Exists('KeyRemapper.csproj.user')" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="BeatSaberModdingTools.Tasks">
       <Version>2.0.0-beta7</Version>
