@@ -53,6 +53,10 @@ internal class RemapBaseGameMenuButton : IAffinity, IInitializable, IDisposable,
     // 现在是否被按下
     private void PatchGetMenuButton(ref bool __result)
     {
+        // Enable 判断
+        if (!_binding.Enabled) return;
+
+        // 没有禁用内置按键
         if (!_binding.BlockBuiltIn && __result) return;
 
         // 避免使用LINQ以防止动态内存分配

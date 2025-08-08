@@ -24,6 +24,7 @@ internal class RestartHandler : HandlerBase
 
     protected override void Handle()
     {
+        if (!BindingConfig.Enabled) return;
         if (_triggered) return;
         _triggered = true;
         _logger.Debug("RestartHandler triggered");
