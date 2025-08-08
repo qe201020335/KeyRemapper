@@ -49,7 +49,17 @@ A **Beat Saber** mod that lets you remap almost any controller button.
 
 ---
 
-## Configuration File
+## Configuration
+
+### In-Game Settings (New in v0.2.0)
+
+You can now configure button mappings directly in-game:
+1. Go to **Mods** menu in the main menu
+2. Select **KeyRemapper**
+3. Use the dropdown menus to add/modify button bindings
+4. Changes are saved automatically and take effect immediately
+
+### Manual Configuration (Advanced)
 
 On first launch the mod creates  
 `UserData/KeyRemapper.json`. A minimal file looks like:
